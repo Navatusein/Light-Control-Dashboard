@@ -1,15 +1,15 @@
 name: Build Develop Image
 
 on:
-  workflow_run:
-    workflows:
-      - Autotest
-    strategy: wait-all
-    timeout: 5m
+  push:
     branches:
       - dev
+  pull_request:
+    branches:
+      - main
     types:
-      - completed
+      - ready_for_review
+      - review_requested
 
 env:
   REGISTRY: ghcr.io
