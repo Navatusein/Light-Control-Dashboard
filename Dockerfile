@@ -1,4 +1,4 @@
-FROM node:18-alpine AS base
+FROM node:22 AS base
 
 LABEL org.opencontainers.image.source="https://github.com/Navatusein/Light-Control-Dashboard"
 
