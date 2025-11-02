@@ -3,54 +3,23 @@ name: Build Production Image
 on:
   push:
     tags:
-      - "v[0-9]+.[0-9]+.[0-9]+"
+      - "[0-9]+.[0-9]+.[0-9]+"
     branches:
       - main
 
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
-
 jobs:
+  run-es-lint:
+    name: Run ES Lint
+    uses: ./.github/reusable/run-es-lint.yaml
+
+  run-auto-test:
+    name: Run Auto Tests
+    uses: ./.github/reusable/run-auto-test.yaml
+
   build-and-push-to-registry:
-    name: Build
-    runs-on: ubuntu-latest
-    permissions:
-      packages: write
-      contents: read
-      attestations: write
-      id-token: write
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Log in to the Container registry
-        uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Write release version
-        run: |
-          VERSION=${GITHUB_REF_NAME#v}
-          echo Version: $VERSION
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
-
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=raw,value=${{ github.ref_name }}
-            type=raw,value=latest 
-
-      - name: Build and push Docker image
-        id: push
-        uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
-        with:
-          context: .
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+    name: Run Auto Tests
+    uses: ./.github/reusable/run-auto-test.yaml
+    with:
+      tags: |
+        type=raw,value=${{ github.ref_name }}
+        type=raw,value=latest
