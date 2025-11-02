@@ -31,6 +31,6 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
-            cd ./deploy
+            cd .deploy
             export TAG=${{ inputs.tag }}
             docker-compose up -d
