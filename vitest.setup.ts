@@ -10,9 +10,12 @@ vi.mock("next/navigation", () => ({
 class FakeEventSource {
   url: string;
   readyState = 1; // OPEN
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onopen: ((ev: any) => void) | null = null;
   onmessage: ((ev: MessageEvent) => void) | null = null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onerror: ((ev: any) => void) | null = null;
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   private listeners: Record<string, Function[]> = {};
 
   constructor(url: string) {
@@ -20,19 +23,21 @@ class FakeEventSource {
     // емулюємо open асинхронно
     setTimeout(() => this.onopen && this.onopen({}), 0);
   }
-
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   addEventListener(type: string, cb: any) {
     (this.listeners[type] ||= []).push(cb);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   removeEventListener(type: string, cb: any) {
     this.listeners[type] = (this.listeners[type] || []).filter((f) => f !== cb);
   }
 
-  // корисно у тестах вручну емулювати прихід повідомлення:
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   __emit(data: any) {
     const payload = typeof data === "string" ? data : JSON.stringify(data);
     const ev = { data: payload } as MessageEvent;
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     this.onmessage && this.onmessage(ev);
     (this.listeners["message"] || []).forEach((cb) => cb(ev));
   }
@@ -42,11 +47,13 @@ class FakeEventSource {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 global.EventSource = FakeEventSource as any;
 
 window.matchMedia = window.matchMedia || function () {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return { matches: false, addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {}, dispatchEvent() { return false; } } as any;
 };
 
-// Якщо якийсь компонент викликає fetch SSE — заглушка
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 globalThis.fetch = globalThis.fetch || (vi.fn(async () => new Response("", { status: 200 })) as any);
