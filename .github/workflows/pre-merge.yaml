@@ -11,8 +11,8 @@ on:
 jobs:
   run-es-lint:
     name: Run ES Lint
-    uses: ./.github/workflows/reusable/run-es-lint.yaml
+    uses: ./.github/workflows/run-es-lint.yaml
 
   run-auto-test:
     name: Run Auto Tests
-    uses: ./.github/workflows/reusable/run-auto-test.yaml
+    uses: ./.github/workflows/run-auto-test.yaml
