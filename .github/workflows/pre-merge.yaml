@@ -1,4 +1,4 @@
-name: auto-tests
+name: Pre Merge
 
 on:
   push:
