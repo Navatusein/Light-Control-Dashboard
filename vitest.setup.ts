@@ -50,6 +50,38 @@ class FakeEventSource {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 global.EventSource = FakeEventSource as any;
 
+class MockEventSource {
+  static instances: MockEventSource[] = [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static __broadcastJSON(data: any) {
+    for (const i of MockEventSource.instances) i.__emit(data);
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onopen: ((ev?: any) => any) | null = null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onmessage: ((ev: MessageEvent) => any) | null = null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onerror: ((ev?: any) => any) | null = null;
+  readyState = 1;
+  url: string;
+  withCredentials = false;
+
+  constructor(url: string) {
+    this.url = url;
+    MockEventSource.instances.push(this);
+    Promise.resolve().then(() => this.onopen?.({}));
+  }
+  close() { this.readyState = 2; }
+
+  __emit(raw: any) {
+    // Компонент очікує { topic, payload }, тому кодуємо як SSE data:
+    this.onmessage?.({ data: JSON.stringify(raw) } as MessageEvent);
+  }
+}
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(global as any).EventSource = MockEventSource;
+
 window.matchMedia = window.matchMedia || function () {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return { matches: false, addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {}, dispatchEvent() { return false; } } as any;

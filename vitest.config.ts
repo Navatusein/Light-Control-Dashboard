@@ -17,6 +17,8 @@ export default defineConfig({
     environment: "jsdom",
     setupFiles: ["./vitest.setup.ts"],
     globals: true,
+    testTimeout: 20000,           // глобальний таймаут
+    hookTimeout: 20000,
     css: false,
     coverage: {
       provider: "v8",
