@@ -35,35 +35,31 @@ jobs:
           printf '%s' "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
       
-          SSH_PORT="${{ secrets.SSH_PORT }}"
           # known_hosts
-          ssh-keyscan -p "$SSH_PORT" -H "${{ secrets.SSH_HOST }}" > ~/.ssh/known_hosts
+          ssh-keyscan -p ${{ secrets.SSH_PORT }} -H "${{ secrets.SSH_HOST }}" > ~/.ssh/known_hosts
 
       - name: Quick sanity checks
         shell: bash
         run: |
           set -eu
-          SSH_PORT="${{ secrets.SSH_PORT }}"
           echo "Check DNS/Reachability..."
           getent ahosts "${{ secrets.SSH_HOST }}" >/dev/null || { echo "DNS not resolving SSH_HOST"; exit 2; }
-          timeout 5 bash -lc "exec 3<>/dev/tcp/${{ secrets.SSH_HOST }}/$SSH_PORT" || { echo "TCP $SSH_PORT not reachable"; exit 3; }
+          timeout 5 bash -lc "exec 3<>/dev/tcp/${{ secrets.SSH_HOST }}/${{ secrets.SSH_PORT }}" || { echo "TCP $SSH_PORT not reachable"; exit 3; }
           echo "Host reachable ✓"
 
       - name: Test SSH auth
         shell: bash
         run: |
           set -eu
-          SSH_PORT="${{ secrets.SSH_PORT }}"
           # -oBatchMode=yes чтобы сразу упасть при проблемах с ключом/паролем
-          ssh -p "$SSH_PORT" -o StrictHostKeyChecking=yes -o BatchMode=yes \
+          ssh -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=yes -o BatchMode=yes \
             "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" "echo 'SSH OK'; command -v docker || echo 'no-docker'"
 
       - name: Test docker on remote
         shell: bash
         run: |
           set -eu
-          SSH_PORT="${{ secrets.SSH_PORT }}"
-          ssh -p "$SSH_PORT" -o StrictHostKeyChecking=yes -o BatchMode=yes \
+          ssh -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=yes -o BatchMode=yes \
             "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" "docker info -f '{{.ServerVersion}}' || echo 'docker-failed'"
 
 #      - name: Install ssh keys
