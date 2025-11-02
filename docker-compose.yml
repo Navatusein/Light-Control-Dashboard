@@ -6,4 +6,10 @@ services:
     container_name: light-control-dashboard
     ports:
       - 80:80
+    environment:
+      - NEXT_PUBLIC_MQTT_WS_URL=wss://broker.hivemq.com:8884/mqtt
+      - NEXT_PUBLIC_MQTT_CLIENT_ID=web-ui-${RANDOM}
+      - NEXT_PUBLIC_MQTT_USERNAME=UserName
+      - NEXT_PUBLIC_MQTT_PASSWORD=Password
+      - NEXT_PUBLIC_MQTT_BASE_TOPIC=Topic
     restart: unless-stopped
