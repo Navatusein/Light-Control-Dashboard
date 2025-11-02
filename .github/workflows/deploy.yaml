@@ -33,7 +33,7 @@ jobs:
           install -m 600 -D /dev/null ~/.ssh/id_ed25519
           echo "${{ inputs.ssh-private-key }}" > ~/.ssh/id_ed25519
           ssh-keyscan -p ${{ inputs.ssh-port }} -H ${{ inputs.ssh-host }} > ~/.ssh/known_hosts
-          docker context create remote --docker host=ssh://${{ inputs.ssh-user }}@${{ secrets.ssh-host }}:${{ inputs.ssh-port }}
+          docker context create remote --docker host=ssh://${{ inputs.ssh-user }}@${{ inputs.ssh-host }}:${{ inputs.ssh-port }}
 
       - name: Log in to the Container registry
         uses: docker/login-action@v3.0.0
