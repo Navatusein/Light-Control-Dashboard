@@ -2,7 +2,8 @@ name: Autotest
 
 on:
   push:
-    branches: [ main, master ]
+    branches:
+      - main
   pull_request:
 
 jobs:

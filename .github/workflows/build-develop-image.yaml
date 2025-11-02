@@ -3,7 +3,13 @@ name: Build Develop Image
 on:
   push:
     branches:
-      - "dev"
+      - dev
+  pull_request:
+    branches:
+      - main
+    types:
+      - ready_for_review
+      - review_requested
 
 env:
   REGISTRY: ghcr.io

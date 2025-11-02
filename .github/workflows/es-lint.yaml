@@ -2,31 +2,15 @@ name: Lint (ESLint)
 
 on:
   push:
-    branches: [ main, develop ]
-    paths:
-      - "**/*.js"
-      - "**/*.jsx"
-      - "**/*.ts"
-      - "**/*.tsx"
-      - "package.json"
-      - "pnpm-lock.yaml"
-      - "yarn.lock"
-      - "package-lock.json"
-      - ".eslintrc*"
-      - "next.config.*"
+    branches:
+      - main
+      - dev
   pull_request:
-    paths:
-      - "**/*.js"
-      - "**/*.jsx"
-      - "**/*.ts"
-      - "**/*.tsx"
-      - "package.json"
-      - "pnpm-lock.yaml"
-      - "yarn.lock"
-      - "package-lock.json"
-      - ".eslintrc*"
-      - "next.config.*"
-
+    branches:
+      - main
+    types:
+      - ready_for_review
+      - review_requested
 jobs:
   eslint:
     name: Run ESLint
