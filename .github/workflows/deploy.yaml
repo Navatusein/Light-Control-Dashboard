@@ -25,12 +25,53 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install ssh keys
+      - name: Install SSH key and known_hosts
+        shell: bash
         run: |
+          set -eu
+          mkdir -p ~/.ssh
           install -m 600 -D /dev/null ~/.ssh/id_ed25519
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
-          ssh-keyscan -p ${{ secrets.SSH_PORT }} -H ${{ secrets.SSH_HOST }} > ~/.ssh/known_hosts
-          docker context create remote --docker host=ssh://${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.SSH_PORT }}
+          # безопасная запись ключа + удаление \r если случайно попали
+          printf '%s' "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+      
+          SSH_PORT="${{ secrets.SSH_PORT:-22 }}"
+          # known_hosts
+          ssh-keyscan -p "$SSH_PORT" -H "${{ secrets.SSH_HOST }}" > ~/.ssh/known_hosts
+
+      - name: Quick sanity checks
+        shell: bash
+        run: |
+          set -eu
+          SSH_PORT="${{ secrets.SSH_PORT:-22 }}"
+          echo "Check DNS/Reachability..."
+          getent ahosts "${{ secrets.SSH_HOST }}" >/dev/null || { echo "DNS not resolving SSH_HOST"; exit 2; }
+          timeout 5 bash -lc "exec 3<>/dev/tcp/${{ secrets.SSH_HOST }}/$SSH_PORT" || { echo "TCP $SSH_PORT not reachable"; exit 3; }
+          echo "Host reachable ✓"
+
+      - name: Test SSH auth
+        shell: bash
+        run: |
+          set -eu
+          SSH_PORT="${{ secrets.SSH_PORT:-22 }}"
+          # -oBatchMode=yes чтобы сразу упасть при проблемах с ключом/паролем
+          ssh -p "$SSH_PORT" -o StrictHostKeyChecking=yes -o BatchMode=yes \
+            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" "echo 'SSH OK'; command -v docker || echo 'no-docker'"
+
+      - name: Test docker on remote
+        shell: bash
+        run: |
+          set -eu
+          SSH_PORT="${{ secrets.SSH_PORT:-22 }}"
+          ssh -p "$SSH_PORT" -o StrictHostKeyChecking=yes -o BatchMode=yes \
+            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" "docker info -f '{{.ServerVersion}}' || echo 'docker-failed'"
+
+#      - name: Install ssh keys
+#        run: |
+#          install -m 600 -D /dev/null ~/.ssh/id_ed25519
+#          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+#          ssh-keyscan -p ${{ secrets.SSH_PORT }} -H ${{ secrets.SSH_HOST }} > ~/.ssh/known_hosts
+#          docker context create remote --docker host=ssh://${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.SSH_PORT }}
 
       - name: Log in to the Container registry
         uses: docker/login-action@v3.0.0
