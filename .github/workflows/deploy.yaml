@@ -23,54 +23,14 @@ jobs:
         uses: actions/checkout@v4
         with: { fetch-depth: 0 }
 
-      - name: Quick reachability check (optional)
-        shell: bash
-        run: |
-          set -eu
-          # Проверим DNS и TCP-порт; если тут падает — проблема сети/порта/фаервола.
-          getent ahosts "${{ secrets.SSH_HOST }}" >/dev/null
-          timeout 5 bash -lc "exec 3<>/dev/tcp/${{ secrets.SSH_HOST }}/${{ secrets.SSH_PORT }}"
-
-      - name: Install SSH key and SSH config (no ssh-keyscan)
-        shell: bash
-        run: |
-          set -eu
-          mkdir -p ~/.ssh
-          install -m 600 -D /dev/null ~/.ssh/id_ed25519
-          printf '%s' "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
-          
-          cat > ~/.ssh/config <<EOF
-          Host deploy-target
-          HostName ${{ secrets.SSH_HOST }}
-          Port ${{ secrets.SSH_PORT }}
-          User ${{ secrets.SSH_USER }}
-          IdentityFile ~/.ssh/id_ed25519
-          IdentitiesOnly yes
-          BatchMode yes
-          StrictHostKeyChecking accept-new
-          UserKnownHostsFile ~/.ssh/known_hosts
-          EOF
-          chmod 600 ~/.ssh/config
-
-      - name: Create Docker SSH context
-        shell: bash
-        run: |
-          set -eu
-          docker context rm -f remote 2>/dev/null || true
-          # Используем алиас из ~/.ssh/config
-          docker context create remote --docker "host=ssh://deploy-target"
-
-      - name: Docker Compose (remote)
-        env:
-          TAG: ${{ inputs.tag || github.ref_name }}
-        shell: bash
-        run: |
-          set -eu
-          export TAG
-          cd .deploy
-          docker compose --context remote -f docker-compose.yml up -d
-
-      - name: Cleanup
-        if: always()
-        run: rm -rf ~/.ssh
+      - name: Deploy to remote server
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            cd ./deploy
+            export TAG=${{ inputs.tag }}
+            docker-compose up -d
