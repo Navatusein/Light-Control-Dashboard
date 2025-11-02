@@ -39,3 +39,7 @@ jobs:
     uses: ./.github/workflows/deploy.yaml
     with:
       tag: ${{ github.ref_name }}
+      ssh-user: ${{ secrets.SSH_USER  }}
+      ssh-host: ${{ secrets.SSH_HOST }}
+      ssh-port: ${{ secrets.SSH_PORT }}
+      ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}

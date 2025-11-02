@@ -5,6 +5,18 @@ on:
       tag:
         required: true
         type: string
+      ssh-host:
+        required: true
+        type: string
+      ssh-user:
+        required: true
+        type: string
+      ssh-port:
+        required: true
+        type: string
+      ssh-private-key:
+        required: true
+        type: string
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -19,9 +31,9 @@ jobs:
       - name: Install ssh keys
         run: |
           install -m 600 -D /dev/null ~/.ssh/id_ed25519
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
-          ssh-keyscan -H ${{ secrets.SSH_HOST }} > ~/.ssh/known_hosts
-          docker context create remote --docker host=ssh://${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}
+          echo "${{ inputs.ssh-private-key }}" > ~/.ssh/id_ed25519
+          ssh-keyscan -p ${{ inputs.ssh-port }} -H ${{ inputs.ssh-host }} > ~/.ssh/known_hosts
+          docker context create remote --docker host=ssh://${{ inputs.ssh-user }}@${{ secrets.ssh-host }}:${{ inputs.ssh-port }}
 
       - name: Log in to the Container registry
         uses: docker/login-action@v3.0.0
