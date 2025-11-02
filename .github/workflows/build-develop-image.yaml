@@ -17,7 +17,7 @@ jobs:
     uses: ./.github/workflows/run-es-lint.yaml
 
   build-and-push-to-registry:
-    name: Run Auto Tests
+    name: Build
     needs:
       - run-es-lint
     uses: ./.github/workflows/build-and-push-to-registry.yaml
