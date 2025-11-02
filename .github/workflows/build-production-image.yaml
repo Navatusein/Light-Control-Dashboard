@@ -2,8 +2,10 @@ name: Build Develop Image
 
 on:
   push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
     branches:
-      - dev
+      - main
   pull_request:
     branches:
       - main
@@ -35,14 +37,20 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Write release version
+        run: |
+          VERSION=${GITHUB_REF_NAME#v}
+          echo Version: $VERSION
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
       - name: Extract metadata (tags, labels) for Docker
         id: meta
         uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=raw,value=dev-${{ github.sha }} 
-            type=raw,value=dev-latest 
+            type=raw,value=${{ github.ref_name }}
+            type=raw,value=latest 
 
       - name: Build and push Docker image
         id: push
