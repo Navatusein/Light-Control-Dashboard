@@ -18,6 +18,11 @@ jobs:
 
   build-and-push-to-registry:
     name: Build
+    permissions:
+      packages: write
+      contents: read
+      attestations: write
+      id-token: write
     needs:
       - run-es-lint
       - run-auto-test

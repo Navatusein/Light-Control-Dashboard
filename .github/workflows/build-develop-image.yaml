@@ -14,6 +14,11 @@ jobs:
 
   build-and-push-to-registry:
     name: Run Auto Tests
+    permissions:
+      packages: write
+      contents: read
+      attestations: write
+      id-token: write
     uses: ./.github/workflows/build-and-push-to-registry.yaml
     with:
       tags: |
