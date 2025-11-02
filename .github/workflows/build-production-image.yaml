@@ -6,10 +6,10 @@ on:
       - "[0-9]+.[0-9]+.[0-9]+"
 
 permissions:
-  packages: write
   contents: read
-  attestations: write
+  packages: write
   id-token: write
+  attestations: write
 
 jobs:
   run-es-lint:
