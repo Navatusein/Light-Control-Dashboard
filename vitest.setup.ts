@@ -73,7 +73,7 @@ class MockEventSource {
     Promise.resolve().then(() => this.onopen?.({}));
   }
   close() { this.readyState = 2; }
-
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
   __emit(raw: any) {
     // Компонент очікує { topic, payload }, тому кодуємо як SSE data:
     this.onmessage?.({ data: JSON.stringify(raw) } as MessageEvent);
