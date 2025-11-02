@@ -47,8 +47,8 @@ export default function Dashboard({ baseFromServer, publishLight }: Props) {
     return () => ev.close();
   }, [base]);
 
-  const call = (path: string, payload: "ON"|"OFF"|"TOGGLE") =>
-    startTransition(() => publishLight(path, payload).catch(err => message.error(String(err))));
+  // @ts-ignore
+  const call = (path: string, payload: "ON"|"OFF"|"TOGGLE") => startTransition(() => publishLight(path, payload).catch(err => message.error(String(err))));
 
   const setAll = (on: boolean) => call(`lights/all/set`, on ? "ON" : "OFF");
   const toggleAll = () => call(`lights/all/set`, "TOGGLE");
