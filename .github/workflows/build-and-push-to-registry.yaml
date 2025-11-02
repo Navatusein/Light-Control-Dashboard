@@ -7,6 +7,12 @@ on:
         required: true
         type: string
 
+permissions:
+  contents: read
+  packages: write
+  id-token: write
+  attestations: write
+
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
@@ -15,11 +21,6 @@ jobs:
   build-and-push-to-registry:
     name: build-and-push-to-registry
     runs-on: ubuntu-latest
-    permissions:
-      packages: write
-      contents: read
-      attestations: write
-      id-token: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

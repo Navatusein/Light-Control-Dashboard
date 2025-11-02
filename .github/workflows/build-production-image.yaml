@@ -5,6 +5,12 @@ on:
     tags:
       - "[0-9]+.[0-9]+.[0-9]+"
 
+permissions:
+  packages: write
+  contents: read
+  attestations: write
+  id-token: write
+
 jobs:
   run-es-lint:
     name: Run ES Lint
@@ -12,17 +18,13 @@ jobs:
 
   run-auto-test:
     name: Run Auto Tests
+    needs:
+      - run-es-lint
     uses: ./.github/workflows/run-auto-test.yaml
 
   build-and-push-to-registry:
     name: Build
-    permissions:
-      packages: write
-      contents: read
-      attestations: write
-      id-token: write
     needs:
-      - run-es-lint
       - run-auto-test
     uses: ./.github/workflows/build-and-push-to-registry.yaml
     with:

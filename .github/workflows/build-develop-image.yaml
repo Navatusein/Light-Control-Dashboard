@@ -5,6 +5,12 @@ on:
     tags:
       - "dev-[0-9]+.[0-9]+.[0-9]+"
 
+permissions:
+  packages: write
+  contents: read
+  attestations: write
+  id-token: write
+
 jobs:
   run-es-lint:
     name: Run ES Lint
@@ -12,11 +18,6 @@ jobs:
 
   build-and-push-to-registry:
     name: Run Auto Tests
-    permissions:
-      packages: write
-      contents: read
-      attestations: write
-      id-token: write
     needs:
       - run-es-lint
     uses: ./.github/workflows/build-and-push-to-registry.yaml
