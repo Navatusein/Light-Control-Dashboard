@@ -13,17 +13,15 @@ on:
       SSH_PRIVATE_KEY:
         required: true
       SSH_PORT:
-        required: true
+        required: true  # порт обязателен
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4.1.1
-        env:
-          GIT_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          fetch-depth: 0
+        uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
 
       - name: Install SSH key and known_hosts
         shell: bash
@@ -31,57 +29,30 @@ jobs:
           set -eu
           mkdir -p ~/.ssh
           install -m 600 -D /dev/null ~/.ssh/id_ed25519
-          # безопасная запись ключа + удаление \r если случайно попали
           printf '%s' "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
-      
-          # known_hosts
-          ssh-keyscan -p ${{ secrets.SSH_PORT }} -H "${{ secrets.SSH_HOST }}" > ~/.ssh/known_hosts
 
-      - name: Quick sanity checks
+          # known_hosts строго с указанным портом
+          ssh-keyscan -p "${{ secrets.SSH_PORT }}" -H "${{ secrets.SSH_HOST }}" > ~/.ssh/known_hosts
+
+      - name: Create Docker SSH context
         shell: bash
         run: |
           set -eu
-          echo "Check DNS/Reachability..."
-          getent ahosts "${{ secrets.SSH_HOST }}" >/dev/null || { echo "DNS not resolving SSH_HOST"; exit 2; }
-          timeout 5 bash -lc "exec 3<>/dev/tcp/${{ secrets.SSH_HOST }}/${{ secrets.SSH_PORT }}" || { echo "TCP $SSH_PORT not reachable"; exit 3; }
-          echo "Host reachable ✓"
+          docker context rm -f remote 2>/dev/null || true
+          docker context create remote \
+            --docker "host=ssh://${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.SSH_PORT }}"
 
-      - name: Test SSH auth
-        shell: bash
-        run: |
-          set -eu
-          # -oBatchMode=yes чтобы сразу упасть при проблемах с ключом/паролем
-          ssh -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=yes -o BatchMode=yes \
-            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" "echo 'SSH OK'; command -v docker || echo 'no-docker'"
-
-      - name: Test docker on remote
-        shell: bash
-        run: |
-          set -eu
-          ssh -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=yes -o BatchMode=yes \
-            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" "docker info -f '{{.ServerVersion}}' || echo 'docker-failed'"
-
-#      - name: Install ssh keys
-#        run: |
-#          install -m 600 -D /dev/null ~/.ssh/id_ed25519
-#          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
-#          ssh-keyscan -p ${{ secrets.SSH_PORT }} -H ${{ secrets.SSH_HOST }} > ~/.ssh/known_hosts
-#          docker context create remote --docker host=ssh://${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.SSH_PORT }}
-
-      - name: Log in to the Container registry
-        uses: docker/login-action@v3.0.0
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Docker compose
+      - name: Docker Compose (remote)
         env:
           TAG: ${{ inputs.tag }}
+        shell: bash
         run: |
-          cd .deploy \
-          docker-compose --context remote -f docker-compose.yml up -d
+          set -eu
+          export TAG
+          cd .deploy
+          docker compose --context remote -f docker-compose.yml up -d
 
-      - name: cleanup
+      - name: Cleanup
+        if: always()
         run: rm -rf ~/.ssh
