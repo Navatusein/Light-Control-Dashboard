@@ -1,0 +1,18 @@
+name: Pre Merge
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  run-es-lint:
+    name: Run ES Lint
+    uses: ./.github/workflows/run-es-lint.yaml
+
+  run-auto-test:
+    name: Run Auto Tests
+    uses: ./.github/workflows/run-auto-test.yaml

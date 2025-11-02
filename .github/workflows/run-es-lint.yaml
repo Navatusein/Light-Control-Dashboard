@@ -1,24 +1,12 @@
-name: Lint (ESLint)
+name: run-es-lint
 
 on:
-  push:
-    branches:
-      - main
-      - dev
-  pull_request:
-    branches:
-      - main
-    types:
-      - ready_for_review
-      - review_requested
+  workflow_call:
+
 jobs:
-  eslint:
-    name: Run ESLint
+  run-es-lint:
+    name: run-es-lint
     runs-on: ubuntu-latest
-    timeout-minutes: 10
-    concurrency:
-      group: eslint-${{ github.ref }}
-      cancel-in-progress: true
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -31,9 +19,7 @@ jobs:
           cache-dependency-path: package-lock.json
 
       - name: Install dependencies
-        run: |
-          corepack enable
-          npm ci
+        run: npm ci
 
       - name: Run ESLint
         run: npm run lint --silent -- --max-warnings=0
