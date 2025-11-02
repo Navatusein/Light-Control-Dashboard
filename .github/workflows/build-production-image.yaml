@@ -10,15 +10,15 @@ on:
 jobs:
   run-es-lint:
     name: Run ES Lint
-    uses: ./.github/reusable/run-es-lint.yaml
+    uses: ./.github/workflows/reusable/run-es-lint.yaml
 
   run-auto-test:
     name: Run Auto Tests
-    uses: ./.github/reusable/run-auto-test.yaml
+    uses: ./.github/workflows/reusable/run-auto-test.yaml
 
   build-and-push-to-registry:
     name: Run Auto Tests
-    uses: ./.github/reusable/run-auto-test.yaml
+    uses: ./.github/workflows/reusable/build-and-push-to-registry.yaml
     with:
       tags: |
         type=raw,value=${{ github.ref_name }}
