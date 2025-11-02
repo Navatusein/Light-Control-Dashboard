@@ -1,0 +1,9 @@
+version: "3"
+
+services:
+  light-control-dashboard:
+    image: ghcr.io/navatusein/light-control-dashboard:dev-latest
+    container_name: light-control-dashboard
+    ports:
+      - 80:80
+    restart: unless-stopped
