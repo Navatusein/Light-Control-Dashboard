@@ -65,7 +65,7 @@ export default function Dashboard({ baseFromServer, publishLight }: Props) {
       <AntApp>
         <Flex vertical gap={16} style={{ padding: 16, maxWidth: 1200, margin: "0 auto" }}>
           <Flex align="center" justify="space-between">
-            <Title level={3} style={{ margin: 0 }}>Light Controller UI</Title>
+            <Title level={3} style={{ margin: 0 }}>Light Controller UI V1.0</Title>
             <Space><Text type="secondary">MQTT:</Text>{StatusTag}</Space>
           </Flex>
 
